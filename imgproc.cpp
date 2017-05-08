@@ -74,7 +74,7 @@ int main(int argc, char const *argv[])
 {
 	system("clear");
 	string mode="image";
-	cout<<"Please select the mode :\n1. Static image\n2. Live video (web cam)\nYour choice (1 or 2):";
+	cout<<"Please select the mode :\n1. Static image\n2. Live video (web cam)\nYour choice (1 or 2): ";
 	int choice; cin>>choice;
 	mode=(choice==1)? "image" : (choice==2)? "video" : "fail";
 	if(mode=="fail")
@@ -113,8 +113,8 @@ int main(int argc, char const *argv[])
 				else
 				{
 	    		// Displaying the selected image
-					imshow("Selected image",frame);
-					waitKey(1);
+					imshow("Selected image : Press any key to continue.",frame);
+					waitKey(0);
 					cout<<"Was that the image you wanted? Type 'y' OR 'n'.\n";
 					char ans; cin>>ans;
 					pass=(ans=='y')? true : false;
@@ -126,22 +126,54 @@ int main(int argc, char const *argv[])
 		waitKey(0);
 	}
 	else if(mode=="video")
-	{
-		VideoCapture cap(0); // open the default camera
-    	if(!cap.isOpened())  // check if we succeeded
-    		{ cout<<"Error in opening camera!\n"; return -1;}
+	{ 
+		system("clear");
+		cout<<"Select the type of video input:\n1. Web-cam\n2. Existing file\nYour choice (1 or 2) : ";
+		int choice; cin>>choice;
+		switch(choice)
+		{
+			case 1: VideoCapture cap(0); // open the default camera
+    				if(!cap.isOpened())  // check if we succeeded
+    				{ 
+		    			cout<<"Error in opening camera!\n"; 
+	            			return -1;
+				}
 
-    	for(int count=0;count<10;count++)
-    	{
-    		Mat frame;
-        	cap >> frame; // get a new frame from camera
-        	imshow("Pixellated video",pixellate(frame));
-        	waitKey(1);
-        	if(count>1000) cap.release();
-        }
-        cap.release();
-
-        waitKey(0);
+    				for(int count=0;count<10;count++)
+    				{
+    					Mat frame;
+        				cap >> frame; // get a new frame from camera
+        				imshow("Pixellated video",pixellate(frame));
+        				waitKey(1);
+        				if(count>1000) cap.release();
+        			}
+        			cap.release();
+        			waitKey(0);
+				break;
+			case 2: cout<<"Enter the exact path of the video file:\n";
+				string path; cin>>path;
+				VideoCapture vid_file;
+				if(!vid_file.open(path))
+				{
+					cout<<"Error in opening file.\n"; return -1; 
+				}
+				else
+				{
+					for(;;)
+					{
+						Mat frame;
+						vid_file >> frame;
+						imshow("Pixellated video", pixellate(frame));
+						waitkey(1);
+					}
+					vid_file.release();
+					waitKey(0);
+				}
+				break;
+			default: cout<<"Wrong option!\n";
+				return -1;
+		}
+				
 
     }
 

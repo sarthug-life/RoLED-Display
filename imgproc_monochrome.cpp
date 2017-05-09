@@ -25,7 +25,7 @@ struct Region
 // Declaration of general global variables
 int no_of_leds=32;
 int no_of_sectors=200;
-const string default_image_path="/home/yash/Desktop/test-image.jpg";
+const string default_image_path="~/Desktop/test-image.jpg";
 
 // Declaration of dynamic global variables
 int xcenter;

@@ -29,9 +29,9 @@ struct CRegion{
 };
 
 // Declaration of global variables
-const string default_image_path="~/Desktop/test-image.jpg";
+const string default_image_path="/home/yash/Desktop/tetris.png";
 const int no_of_leds=32;
-const int no_of_sectors=100;
+int no_of_sectors=360;
 const int start_led=10;
 int radius,xcenter,ycenter;
 
@@ -54,12 +54,13 @@ int main(int argc, char const *argv[])
 	cout<<"RECTANGULAR TO CIRCULAR CONVERSION\n";
 	do{
 		// setting up the image path from the user
-		cout<<"\nEnter complete path of the image OR type \'default\' to use default image: \n";
+		cout<<"\nEnter complete path of the image OR type \'def\' to use default image: \n";
 		cin>>path;
-		if(path=="default")
+		if(path=="def")
 		{
 			
 			path=default_image_path;
+			break;
 
 		}
 		else
@@ -74,6 +75,11 @@ int main(int argc, char const *argv[])
 
 	// at this point, we have the correct path
 	Mat frame=imread(path,CV_LOAD_IMAGE_COLOR);
+
+	// ensuring that the width of each section is >0
+	if(frame.cols<no_of_sectors) no_of_sectors=frame.cols;
+	imshow("Selected image",frame);
+	waitKey(0);
 	imshow("Resultant image",modify_and_pixellate(frame));
 	waitKey(0);
 
@@ -83,8 +89,7 @@ int main(int argc, char const *argv[])
 Mat modify_and_pixellate(Mat pixels)
 {
 	// storing the details of the image
-	radius=(int)((pixels.rows*no_of_leds)/start_led);
-	
+	radius=(int)((pixels.rows*no_of_leds)/(no_of_leds-start_led));
 
 	// vector to store the B,G,R values and the number of pixels
 	vector< vector< vector<lli> > > data_of_regions(no_of_sectors,vector< vector<lli> >(no_of_leds, vector<lli>(4, 1)));
@@ -95,6 +100,7 @@ Mat modify_and_pixellate(Mat pixels)
 		for(int x=0;x<pixels.cols;x++)
 		{
 			Vec3b pixel=pixels.at<Vec3b>(Point(x,y));
+			
 			RRegion temp=calcRectangularRegionNumber(x,y,pixels.rows,pixels.cols);
 			// accumulating B,G,R values in data_of_regions     			
 			data_of_regions[temp.section][temp.region][0]+=pixel[0];
@@ -129,6 +135,7 @@ Mat modify_and_pixellate(Mat pixels)
 Mat createCircularImage(vector< vector< vector<int> > > averaged_pixels)
 {
 	Mat res_image(2*radius,2*radius,CV_8UC3,Scalar(255,255,255));
+	
 	xcenter=ycenter=radius;
 	for(int y=0;y<res_image.rows;y++)
 	{
@@ -155,6 +162,10 @@ RRegion calcRectangularRegionNumber(int x,int y,int h,int w)
 	RRegion res;
 	res.section=(int)(x/delta_width);
 	res.region=(int)(((h-y)/delta_height)+start_led);
+	// applying constraints
+	res.section=(res.section>=no_of_sectors)? (no_of_sectors-1) : res.section;
+	res.region=(res.region>=no_of_leds)? (no_of_leds-1) : res.region;
+
 	return res;
 }
 CRegion calcCircularRegionNumber(int x,int y)
